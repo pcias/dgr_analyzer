@@ -1,23 +1,26 @@
 library(rio)
-library(writexl)
+#library(writexl)
 library(urltools)
 library(zoo)
 library(xts)
 library(tidyr)
 library(dplyr)
 library(lubridate)
-library(alphavantager)
-library(ggplot2)
-library(plotly)
+#library(alphavantager)
+#library(ggplot2)
+#library(plotly)
 library(tidyquant)
-library(PerformanceAnalytics)
-library(knitr)
+#library(PerformanceAnalytics)
+#library(knitr)
 library(reactable)
+library(data.table)
 
 library(svDialogs)
 
 library(rnbp)
-library(fifovaluation)
+#library(fifovaluation)
+
+
 
 source('cbind.na.R')
 
@@ -166,7 +169,12 @@ pSBmap <- function(sample_url) {
   for(i in isins$isin) {
     #print(i)
     #print(positionsSellBuyMap(i))
-    ret <- bind_rows(ret, positionsSellBuyMap(Transactions,i))
+    
+    #slower
+    #ret <- bind_rows(ret, positionsSellBuyMap(Transactions,i))
+    
+    #faster
+    ret <- rbindlist(list(ret,positionsSellBuyMap(Transactions,i)))
   }
   
   Tsells <- Transactions %>% filter(qty<0)
@@ -300,11 +308,13 @@ pSBreactable <- function(psbmap) {
   return(list(long=react_openlongpos, short=react_openshortpos, closed=react_closedpos))
 }
 
-
-sample_url <- "https://trader.degiro.nl/reporting/secure/v3/positionReport/xls?intAccount=71001415&sessionId=0C6C0D57BA7F77594F1D3F022B7A5053.prod_b_126_1&country=PL&lang=pl&toDate=17%2F02%2F2021"
-sample_url <- dlg_input("Paste here portfolio download xls link (portfolio->download->XLS):", default = sample_url)$res
-
-psb <- pSBmap(sample_url)
-
-output <- pSBreactable(psb)
-output$closed
+test<-function() {
+  
+  sample_url <- "https://trader.degiro.nl/reporting/secure/v3/positionReport/xls?intAccount=71001415&sessionId=0769C5C351A301DA79055003AB6DDD3D.prod_b_126_1&country=PL&lang=pl&toDate=18%2F02%2F2021"
+  #sample_url <- dlg_input("Paste here portfolio download xls link (portfolio->download->XLS):", default = sample_url)$res
+  
+  psb <- pSBmap(sample_url)
+  
+  output <- pSBreactable(psb)
+  output$closed
+}
