@@ -15,7 +15,7 @@ library(tidyquant)
 library(reactable)
 library(data.table)
 
-library(svDialogs)
+#library(svDialogs)
 
 library(rnbp)
 #library(fifovaluation)
@@ -195,7 +195,7 @@ pSBmap <- function(sample_url) {
 
 pSBreactable <- function(psbmap) {
   openlongpos <- psbmap%>% filter(is.na(repSells.transactionid)) %>% select(Tbuys.isin, Tbuys.product, repBuys.transactionid, qty,Tbuys.date,Tbuys.time,Tbuys.quote,Tbuys.quotecur,Tbuys.mid.nbptables.cur,Tbuys.valuePLN_portion,Tbuys.feePLN_portion)
-  openshortpos <-psbmap%>% filter(is.na(repBuys.transactionid)) %>% select(Tsells.isin, repSells.transactionid, qty,Tsells.date,Tsells.time,Tbuys.quote,Tsells.quotecur,Tsells.mid.nbptables.cur,Tsells.valuePLN_portion,Tsells.feePLN_portion)
+  openshortpos <-psbmap%>% filter(is.na(repBuys.transactionid)) %>% select(Tsells.isin, repSells.transactionid, qty,Tsells.date,Tsells.time,Tsells.quote,Tsells.quotecur,Tsells.mid.nbptables.cur,Tsells.valuePLN_portion,Tsells.feePLN_portion)
   closedpos <- psbmap%>% filter(!is.na(repBuys.transactionid) , !is.na(repSells.transactionid)) %>% 
       select(Tbuys.isin, Tbuys.product, repBuys.transactionid, qty,Tbuys.date,Tbuys.time,Tbuys.quote,Tbuys.quotecur,Tbuys.mid.nbptables.cur,Tbuys.valuePLN_portion,Tbuys.feePLN_portion,
             repSells.transactionid, qty,Tsells.date,Tsells.time,Tbuys.quote,Tsells.quotecur,Tsells.mid.nbptables.cur,Tsells.valuePLN_portion,Tsells.feePLN_portion,closing_year,gainsPLN,gainsMinusFeesPLN)
@@ -315,6 +315,12 @@ test<-function() {
   
   psb <- pSBmap(sample_url)
   
+  output <- pSBreactable(psb)
+  output$closed
+}
+
+test_fakeit<-function() {
+  psb <- readRDS("fakeit.rds")
   output <- pSBreactable(psb)
   output$closed
 }
