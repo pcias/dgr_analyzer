@@ -66,7 +66,7 @@ function(sample_url) {
 
 #* fake (testing) summary for closed positions
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
-#* @get /fakeitjson
+#* @get /fakeit_json
 #* @serializer json
 function(sample_url) {
   psb <- readRDS("fakeit.rds")
@@ -75,6 +75,39 @@ function(sample_url) {
   return(psb)
   #return(output$closed)
 }
+
+
+#* provide summary for closed positions
+#* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
+#* @get /closed_positions_json
+#* @serializer json
+function(sample_url) {
+  psb<-"brak danych"
+  psb <- pSBmap(sample_url)
+  return(closedpos(psb))
+}
+
+
+#* provide summary of long positions
+#* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
+#* @get /long_positions_json
+#* @serializer json
+function(sample_url) {
+  psb<-"brak danych"
+  psb <- pSBmap(sample_url)
+  return(openlongpos(psb))
+}
+
+#* provide summary of short positions
+#* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
+#* @get /short_positions_json
+#* @serializer json
+function(sample_url) {
+  psb <- pSBmap(sample_url)
+  ret <- openshortpos(psb)
+  return(openshortpos(psb))
+}
+
 
 
 #* @assets ./static /
