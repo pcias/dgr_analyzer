@@ -64,5 +64,18 @@ function(sample_url) {
   return(output$closed)
 }
 
+#* fake (testing) summary for closed positions
+#* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
+#* @get /fakeitjson
+#* @serializer json
+function(sample_url) {
+  psb <- readRDS("fakeit.rds")
+  output <- pSBreactable(psb)
+  
+  return(psb)
+  #return(output$closed)
+}
+
+
 #* @assets ./static /
 list()

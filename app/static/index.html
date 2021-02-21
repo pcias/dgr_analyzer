@@ -33,7 +33,7 @@
     </nav>
 
     <div class="container-fluid">
-        <div id="closed_positions"></div>
+        <iframe id="iframe" name="closedpos" style="width:100%;height: 100%;"></iframe>
     </div>
 
 
@@ -42,12 +42,9 @@
 </body>
 
 <script>
-    $("#closed_positions").load("/fakeit",
-     function (response, status, xhr) {
-            if (status == "error") {
-                var msg = "Sorry but there was an error: ";
-                $("#error").html(msg + xhr.status + " " + xhr.statusText);
-            }});
+    $(document).ready(function () {
+            $('#iframe').attr('src', '/fakeit');
+        });
 </script>
 
 </html>
