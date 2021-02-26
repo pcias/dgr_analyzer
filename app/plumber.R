@@ -70,10 +70,8 @@ function(sample_url) {
 #* @serializer json
 function(sample_url) {
   psb <- readRDS("fakeit.rds")
-  output <- pSBreactable(psb)
-  
   return(psb)
-  #return(output$closed)
+  
 }
 
 
@@ -82,8 +80,13 @@ function(sample_url) {
 #* @get /closed_positions_json
 #* @serializer json
 function(sample_url) {
-  psb<-"brak danych"
-  psb <- pSBmap(sample_url)
+  if(sample_url=="fakeit") {
+    psb <- readRDS("fakeit.rds")  
+  } else {
+    psb<-"brak danych"
+    psb <- pSBmap(sample_url)  
+  }
+  
   return(closedpos(psb))
 }
 
@@ -93,8 +96,12 @@ function(sample_url) {
 #* @get /long_positions_json
 #* @serializer json
 function(sample_url) {
-  psb<-"brak danych"
-  psb <- pSBmap(sample_url)
+  if(sample_url=="fakeit") {
+      psb <- readRDS("fakeit.rds")  
+  } else {
+      psb<-"brak danych"
+      psb <- pSBmap(sample_url)  
+  }
   return(openlongpos(psb))
 }
 
@@ -103,10 +110,15 @@ function(sample_url) {
 #* @get /short_positions_json
 #* @serializer json
 function(sample_url) {
-  psb <- pSBmap(sample_url)
-  ret <- openshortpos(psb)
+  if(sample_url=="fakeit") {
+    psb <- readRDS("fakeit.rds")  
+  } else {
+    psb<-"brak danych"
+    psb <- pSBmap(sample_url)  
+  }
   return(openshortpos(psb))
 }
+
 
 
 
