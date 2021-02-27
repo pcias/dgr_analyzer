@@ -120,8 +120,8 @@ positionsSellBuyMap <- function(p_Transactions, p_isin) {
   repBuys <- Tbuys  %>% summarise(transactionid = rep(transactionid, abs(qty), qty = 1))
   repSells <- Tsells %>% summarise(transactionid = rep(transactionid, abs(qty), qty = 1))
   
-  names(repBuys) <- paste("repBuys",names(repBuys),sep=".")
-  names(repSells) <- paste("repSells",names(repSells),sep=".")
+  names(repBuys) <- paste("repBuys",names(repBuys),sep="_")
+  names(repSells) <- paste("repSells",names(repSells),sep="_")
   #if(nrow(repSells) == 0 ) {repSells <- repSells%>% ungroup() %>% add_row()}  
   #if(nrow(repBuys) == 0 ) {repBuys <- repSells%>% ungroup() %>% add_row()}  
   
@@ -130,7 +130,7 @@ positionsSellBuyMap <- function(p_Transactions, p_isin) {
   
   ret <-
     
-    lineupSellBuy %>% group_by(repBuys.transactionid, repSells.transactionid) %>% summarise(qty = n(), .groups="keep") 
+    lineupSellBuy %>% group_by(repBuys_transactionid, repSells_transactionid) %>% summarise(qty = n(), .groups="keep") 
   
   return(ret)
 }
@@ -154,14 +154,14 @@ pSBmap <- function(sample_url) {
   
   
   #now join Transations with forex to valuate transaction
-  Transactions <- Transactions%>%left_join(nbptables %>% rename_with(function(x) { paste(x, ".nbptables.cur", sep="")}), by = c("date" = "effectiveDate.nbptables.cur", "quotecur" = "curcode.nbptables.cur"))
+  Transactions <- Transactions%>%left_join(nbptables %>% rename_with(function(x) { paste(x, "_nbptables_cur", sep="")}), by = c("date" = "effectiveDate_nbptables_cur", "quotecur" = "curcode_nbptables_cur"))
   
   #and join with EUR/PLN forex to valuate fees
-  Transactions <- Transactions %>% left_join(nbptables %>% rename_with(function(x) { paste(x, ".nbptables.eur", sep="")}) %>% filter(curcode.nbptables.eur=="EUR"), by = c("date" = "effectiveDate.nbptables.eur"))
+  Transactions <- Transactions %>% left_join(nbptables %>% rename_with(function(x) { paste(x, "_nbptables_eur", sep="")}) %>% filter(curcode.nbptables_eur=="EUR"), by = c("date" = "effectiveDate_nbptables_eur"))
   
   
   #valuate transaction and fees in PLN
-  Transactions <- Transactions%>%mutate(valuePLN = locval*mid.nbptables.cur, feePLN= fee*mid.nbptables.eur, quotePLN = quote*mid.nbptables.cur)
+  Transactions <- Transactions%>%mutate(valuePLN = locval*mid_nbptables_cur, feePLN= fee*mid_nbptables_eur, quotePLN = quote*mid_nbptables_cur)
   
   
   #Transactions_prefixed<-Transactions
@@ -179,47 +179,47 @@ pSBmap <- function(sample_url) {
   
   Tsells <- Transactions %>% filter(qty<0)
   Tbuys <- Transactions %>% filter(qty>0)
-  names(Tsells) <- paste("Tsells",names(Tsells),sep=".")
-  names(Tbuys) <- paste("Tbuys",names(Tbuys),sep=".")
+  names(Tsells) <- paste("Tsells",names(Tsells),sep="_")
+  names(Tbuys) <- paste("Tbuys",names(Tbuys),sep="_")
   
-  ret <- ret %>% left_join(Tbuys, by = c("repBuys.transactionid" = "Tbuys.transactionid")) %>% left_join(Tsells, by = c("repSells.transactionid" = "Tsells.transactionid")) %>% arrange(Tbuys.isin,Tbuys.date, Tbuys.time)
+  ret <- ret %>% left_join(Tbuys, by = c("repBuys_transactionid" = "Tbuys_transactionid")) %>% left_join(Tsells, by = c("repSells_transactionid" = "Tsells_transactionid")) %>% arrange(Tbuys_isin,Tbuys_date, Tbuys_time)
   
   ##### gains and fees
-  ret <- ret %>% mutate( Tsells.portion = -qty/Tsells.qty, Tbuys.portion = qty/Tbuys.qty, Tbuys.feePLN_portion = Tbuys.feePLN * Tbuys.portion, Tsells.feePLN_portion = Tsells.fee * Tsells.portion, 
-                         Tbuys.valuePLN_portion = Tbuys.valuePLN*Tbuys.portion , Tsells.valuePLN_portion = Tsells.valuePLN*Tsells.portion, gainsPLN = Tsells.valuePLN_portion + Tbuys.valuePLN_portion, 
-                         gainsMinusFeesPLN = gainsPLN+Tsells.feePLN_portion+Tbuys.feePLN_portion,
-                         closing_date = as.Date(ifelse(Tbuys.date > Tsells.date, Tbuys.date, Tsells.date)), closing_year = year(as.Date(closing_date)))
+  ret <- ret %>% mutate( Tsells_portion = -qty/Tsells_qty, Tbuys_portion = qty/Tbuys_qty, Tbuys_feePLN_portion = Tbuys_feePLN * Tbuys_portion, Tsells_feePLN_portion = Tsells_fee * Tsells_portion, 
+                         Tbuys_valuePLN_portion = Tbuys_valuePLN*Tbuys_portion , Tsells_valuePLN_portion = Tsells_valuePLN*Tsells_portion, gainsPLN = Tsells_valuePLN_portion + Tbuys_valuePLN_portion, 
+                         gainsMinusFeesPLN = gainsPLN+Tsells_feePLN_portion+Tbuys_feePLN_portion,
+                         closing_date = as.Date(ifelse(Tbuys_date > Tsells_date, Tbuys_date, Tsells_date)), closing_year = year(as.Date(closing_date)))
   
   return(ret)  
 }
 
 
 openlongpos <- function(psbmap) {
-  return(psbmap%>% filter(is.na(repSells.transactionid)) %>% select(Tbuys.isin, Tbuys.product, repBuys.transactionid, qty,Tbuys.date,Tbuys.time,Tbuys.quote,Tbuys.quotecur,Tbuys.mid.nbptables.cur,Tbuys.valuePLN_portion,Tbuys.feePLN_portion))
+  return(psbmap%>% filter(is.na(repSells_transactionid)) %>% select(Tbuys_isin, Tbuys_product, repBuys_transactionid, qty,Tbuys_date,Tbuys_time,Tbuys_quote,Tbuys_quotecur,Tbuys_mid_nbptables_cur,Tbuys_valuePLN_portion,Tbuys_feePLN_portion))
 }
 
 openshortpos <- function(psbmap) {
-  return(psbmap%>% filter(is.na(repBuys.transactionid)) %>% select(Tsells.isin, repSells.transactionid, qty,Tsells.date,Tsells.time,Tsells.quote,Tsells.quotecur,Tsells.mid.nbptables.cur,Tsells.valuePLN_portion,Tsells.feePLN_portion))
+  return(psbmap%>% filter(is.na(repBuys_transactionid)) %>% select(Tsells_isin, repSells_transactionid, qty,Tsells_date,Tsells_time,Tsells_quote,Tsells_quotecur,Tsells_mid_nbptables_cur,Tsells_valuePLN_portion,Tsells_feePLN_portion))
 }
 
 closedpos <- function(psbmap) {
-  return(psbmap%>% filter(!is.na(repBuys.transactionid) , !is.na(repSells.transactionid)) %>% 
-    select(Tbuys.isin, Tbuys.product, repBuys.transactionid, qty,Tbuys.date,Tbuys.time,Tbuys.quote,Tbuys.quotecur,Tbuys.mid.nbptables.cur,Tbuys.valuePLN_portion,Tbuys.feePLN_portion,
-           repSells.transactionid, qty,Tsells.date,Tsells.time,Tbuys.quote,Tsells.quotecur,Tsells.mid.nbptables.cur,Tsells.valuePLN_portion,Tsells.feePLN_portion,closing_year,gainsPLN,gainsMinusFeesPLN))
+  return(psbmap%>% filter(!is.na(repBuys_transactionid) , !is.na(repSells_transactionid)) %>% 
+    select(Tbuys_isin, Tbuys_product, repBuys_transactionid, qty,Tbuys_date,Tbuys_time,Tbuys_quote,Tbuys_quotecur,Tbuys_mid_nbptables_cur,Tbuys_valuePLN_portion,Tbuys_feePLN_portion,
+           repSells_transactionid, qty,Tsells_date,Tsells_time,Tbuys_quote,Tsells_quotecur,Tsells_mid_nbptables_cur,Tsells_valuePLN_portion,Tsells_feePLN_portion,closing_year,gainsPLN,gainsMinusFeesPLN))
 }
 
 
 pSBreactable <- function(psbmap) {
-  openlongpos <- psbmap%>% filter(is.na(repSells.transactionid)) %>% select(Tbuys.isin, Tbuys.product, repBuys.transactionid, qty,Tbuys.date,Tbuys.time,Tbuys.quote,Tbuys.quotecur,Tbuys.mid.nbptables.cur,Tbuys.valuePLN_portion,Tbuys.feePLN_portion)
-  openshortpos <-psbmap%>% filter(is.na(repBuys.transactionid)) %>% select(Tsells.isin, repSells.transactionid, qty,Tsells.date,Tsells.time,Tsells.quote,Tsells.quotecur,Tsells.mid.nbptables.cur,Tsells.valuePLN_portion,Tsells.feePLN_portion)
-  closedpos <- psbmap%>% filter(!is.na(repBuys.transactionid) , !is.na(repSells.transactionid)) %>% 
-      select(Tbuys.isin, Tbuys.product, repBuys.transactionid, qty,Tbuys.date,Tbuys.time,Tbuys.quote,Tbuys.quotecur,Tbuys.mid.nbptables.cur,Tbuys.valuePLN_portion,Tbuys.feePLN_portion,
-            repSells.transactionid, qty,Tsells.date,Tsells.time,Tbuys.quote,Tsells.quotecur,Tsells.mid.nbptables.cur,Tsells.valuePLN_portion,Tsells.feePLN_portion,closing_year,gainsPLN,gainsMinusFeesPLN)
+  openlongpos <- psbmap%>% filter(is.na(repSells_transactionid)) %>% select(Tbuys_isin, Tbuys_product, repBuys_transactionid, qty,Tbuys_date,Tbuys_time,Tbuys_quote,Tbuys_quotecur,Tbuys_mid_nbptables_cur,Tbuys_valuePLN_portion,Tbuys_feePLN_portion)
+  openshortpos <-psbmap%>% filter(is.na(repBuys_transactionid)) %>% select(Tsells_isin, repSells_transactionid, qty,Tsells_date,Tsells_time,Tsells_quote,Tsells_quotecur,Tsells_mid_nbptables_cur,Tsells_valuePLN_portion,Tsells_feePLN_portion)
+  closedpos <- psbmap%>% filter(!is.na(repBuys_transactionid) , !is.na(repSells_transactionid)) %>% 
+      select(Tbuys_isin, Tbuys_product, repBuys_transactionid, qty,Tbuys_date,Tbuys_time,Tbuys_quote,Tbuys_quotecur,Tbuys_mid_nbptables_cur,Tbuys_valuePLN_portion,Tbuys_feePLN_portion,
+            repSells_transactionid, qty,Tsells_date,Tsells_time,Tbuys_quote,Tsells_quotecur,Tsells_mid_nbptables_cur,Tsells_valuePLN_portion,Tsells_feePLN_portion,closing_year,gainsPLN,gainsMinusFeesPLN)
                   
   
   react_openlongpos <- reactable(
     openlongpos,
-    groupBy = "Tbuys.isin",
+    groupBy = "Tbuys_isin",
     defaultExpanded = TRUE,
     pagination = FALSE,
     compact = TRUE,
@@ -233,23 +233,23 @@ pSBreactable <- function(psbmap) {
       style = list(fontSize = "small")
     ),
     columns = list(
-      Tbuys.isin = colDef(style = list(fontWeight = 600, fontSize = "small"), name = "ISIN"),
-      Tbuys.product = colDef(name="Produkt"),
-      repBuys.transactionid = colDef(name = "TxID zakupu"),
+      Tbuys_isin = colDef(style = list(fontWeight = 600, fontSize = "small"), name = "ISIN"),
+      Tbuys_product = colDef(name="Produkt"),
+      repBuys_transactionid = colDef(name = "TxID zakupu"),
       qty = colDef(name = "ilość",aggregate = "sum"),
-      Tbuys.date = colDef(name="data otw"),
-      Tbuys.time = colDef(name="czas otw"),
-      Tbuys.quote = colDef(name="cena zakupu", format=colFormat(separators = TRUE)),
-      Tbuys.quotecur = colDef(name="waluta"),
-      Tbuys.mid.nbptables.cur = colDef(name = "kurs nbp zakupu", format=colFormat(separators = TRUE)),
-      Tbuys.valuePLN_portion = colDef(name="Koszt pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
-      Tbuys.feePLN_portion = colDef(name="opłaty zak", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE))                               
+      Tbuys_date = colDef(name="data otw"),
+      Tbuys_time = colDef(name="czas otw"),
+      Tbuys_quote = colDef(name="cena zakupu", format=colFormat(separators = TRUE)),
+      Tbuys_quotecur = colDef(name="waluta"),
+      Tbuys_mid_nbptables_cur = colDef(name = "kurs nbp zakupu", format=colFormat(separators = TRUE)),
+      Tbuys_valuePLN_portion = colDef(name="Koszt pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
+      Tbuys_feePLN_portion = colDef(name="opłaty zak", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE))                               
       )
   )
   
   react_openshortpos <- reactable(
     openshortpos,
-    groupBy = "Tsells.isin",
+    groupBy = "Tsells_isin",
     defaultExpanded = TRUE,
     pagination = FALSE,
     compact = TRUE,
@@ -263,24 +263,24 @@ pSBreactable <- function(psbmap) {
       style = list(fontSize = "small")
     ),
     columns = list(
-      Tsells.isin = colDef(style = list(fontWeight = 600, fontSize = "small"), name = "ISIN"),
-      Tsells.product = colDef(name="Produkt"),
-      repSells.transactionid = colDef(name = "TxID sprzedaży"),
+      Tsells_isin = colDef(style = list(fontWeight = 600, fontSize = "small"), name = "ISIN"),
+      Tsells_product = colDef(name="Produkt"),
+      repSells_transactionid = colDef(name = "TxID sprzedaży"),
       qty = colDef(name = "ilość",aggregate = "sum"),
-      Tsells.date = colDef(name="data otw"),
-      Tsells.time = colDef(name="czas otw"),
-      Tsells.quote = colDef(name="cena sprzedaży", format=colFormat(separators = TRUE)),
-      Tsells.quotecur = colDef(name="waluta"),
-      Tsells.mid.nbptables.cur = colDef(name = "kurs nbp sprzedaży", format=colFormat(separators = TRUE)),
-      Tsells.valuePLN_portion = colDef(name="Przychód pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
-      Tsells.feePLN_portion = colDef(name="opłaty sprz", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE))                              
+      Tsells_date = colDef(name="data otw"),
+      Tsells_time = colDef(name="czas otw"),
+      Tsells_quote = colDef(name="cena sprzedaży", format=colFormat(separators = TRUE)),
+      Tsells_quotecur = colDef(name="waluta"),
+      Tsells_mid_nbptables_cur = colDef(name = "kurs nbp sprzedaży", format=colFormat(separators = TRUE)),
+      Tsells_valuePLN_portion = colDef(name="Przychód pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
+      Tsells_feePLN_portion = colDef(name="opłaty sprz", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE))                              
     )
   )
   
   
   react_closedpos <- reactable(
     closedpos,
-    groupBy = c("closing_year","Tbuys.isin"),
+    groupBy = c("closing_year","Tbuys_isin"),
     defaultExpanded = TRUE,
     pagination = FALSE,
     compact = TRUE,
@@ -294,27 +294,27 @@ pSBreactable <- function(psbmap) {
       style = list(fontSize = "small")
     ),
     columns = list(
-      Tbuys.isin = colDef(style = list(fontWeight = 600, fontSize = "small"), name = "ISIN"),
+      Tbuys_isin = colDef(style = list(fontWeight = 600, fontSize = "small"), name = "ISIN"),
       closing_year = colDef(name="rok zamknięcia"),
-      Tbuys.product = colDef(name="Produkt"),
-      repBuys.transactionid = colDef(name = "TxID zakupu"),
+      Tbuys_product = colDef(name="Produkt"),
+      repBuys_transactionid = colDef(name = "TxID zakupu"),
       qty = colDef(name = "ilość",aggregate = "sum"),
-      Tbuys.date = colDef(name="data zak"),
-      Tbuys.time = colDef(name="czas zak"),
-      Tbuys.quote = colDef(name="cena zakupu", format=colFormat(separators = TRUE)),
-      Tbuys.quotecur = colDef(name="waluta"),
-      Tbuys.mid.nbptables.cur = colDef(name = "kurs nbp zakupu", format=colFormat(separators = TRUE)),
-      Tbuys.valuePLN_portion = colDef(name="Koszt pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
-      Tbuys.feePLN_portion = colDef(name="opłaty zak", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
-      repSells.transactionid = colDef(name = "TxID sprzedaży"),
+      Tbuys_date = colDef(name="data zak"),
+      Tbuys_time = colDef(name="czas zak"),
+      Tbuys_quote = colDef(name="cena zakupu", format=colFormat(separators = TRUE)),
+      Tbuys_quotecur = colDef(name="waluta"),
+      Tbuys_mid_nbptables_cur = colDef(name = "kurs nbp zakupu", format=colFormat(separators = TRUE)),
+      Tbuys_valuePLN_portion = colDef(name="Koszt pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
+      Tbuys_feePLN_portion = colDef(name="opłaty zak", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
+      repSells_transactionid = colDef(name = "TxID sprzedaży"),
       qty = colDef(name = "ilość",aggregate = "sum"),
-      Tsells.date = colDef(name="data sprz"),
-      Tsells.time = colDef(name="czas sprz"),
-      Tsells.quote = colDef(name="cena sprzedaży", format=colFormat(separators = TRUE)),
-      Tsells.quotecur = colDef(name="waluta"),
-      Tsells.mid.nbptables.cur = colDef(name = "kurs nbp sprzedaży", format=colFormat(separators = TRUE)),
-      Tsells.valuePLN_portion = colDef(name="Przychód pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
-      Tsells.feePLN_portion = colDef(name="opłaty sprz", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
+      Tsells_date = colDef(name="data sprz"),
+      Tsells_time = colDef(name="czas sprz"),
+      Tsells_quote = colDef(name="cena sprzedaży", format=colFormat(separators = TRUE)),
+      Tsells_quotecur = colDef(name="waluta"),
+      Tsells_mid_nbptables_cur = colDef(name = "kurs nbp sprzedaży", format=colFormat(separators = TRUE)),
+      Tsells_valuePLN_portion = colDef(name="Przychód pozycji", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
+      Tsells_feePLN_portion = colDef(name="opłaty sprz", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
       gainsPLN = colDef(name="Dochód", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE)),
       gainsMinusFeesPLN = colDef(name="Dochód po opłatach", aggregate = "sum", format = colFormat(currency = "PLN", separators = TRUE))
     )
