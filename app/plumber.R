@@ -22,7 +22,11 @@ source("degiro_script.R")
 #* @get /closed_positions
 #* @serializer htmlwidget
 function(sample_url) {
-  psb <- pSBmap(sample_url)
+  if(sample_url=="fakeit") {
+    psb <- readRDS("fakeit.rds")  
+  } else {
+    psb <- pSBmap(sample_url)  
+  }
   output <- pSBreactable(psb)
   
   return(output$closed)
@@ -34,8 +38,13 @@ function(sample_url) {
 #* @get /long_positions
 #* @serializer htmlwidget
 function(sample_url) {
-  psb <- pSBmap(sample_url)
+  if(sample_url=="fakeit") {
+    psb <- readRDS("fakeit.rds")  
+  } else {
+    psb <- pSBmap(sample_url)  
+  }
   output <- pSBreactable(psb)
+  
   
   return(output$long)
 }
@@ -45,8 +54,13 @@ function(sample_url) {
 #* @get /short_positions
 #* @serializer htmlwidget
 function(sample_url) {
-  psb <- pSBmap(sample_url)
+  if(sample_url=="fakeit") {
+    psb <- readRDS("fakeit.rds")  
+  } else {
+    psb <- pSBmap(sample_url)  
+  }
   output <- pSBreactable(psb)
+  
   
   return(output$short)
 }

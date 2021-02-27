@@ -55,6 +55,7 @@ read_transactions <- function(sample_url, from_date, to_date) {
   #degiro bug workarounds
   ret$product <- substr(ret$product, 1, 34)
   ret <- ret%>%filter(!is.na(qty))
+  ret$fee[is.na(ret$fee)]<-0
   
   
   # for(col in numeric_cols) {
@@ -157,7 +158,7 @@ pSBmap <- function(sample_url) {
   Transactions <- Transactions%>%left_join(nbptables %>% rename_with(function(x) { paste(x, "_nbptables_cur", sep="")}), by = c("date" = "effectiveDate_nbptables_cur", "quotecur" = "curcode_nbptables_cur"))
   
   #and join with EUR/PLN forex to valuate fees
-  Transactions <- Transactions %>% left_join(nbptables %>% rename_with(function(x) { paste(x, "_nbptables_eur", sep="")}) %>% filter(curcode.nbptables_eur=="EUR"), by = c("date" = "effectiveDate_nbptables_eur"))
+  Transactions <- Transactions %>% left_join(nbptables %>% rename_with(function(x) { paste(x, "_nbptables_eur", sep="")}) %>% filter(curcode_nbptables_eur=="EUR"), by = c("date" = "effectiveDate_nbptables_eur"))
   
   
   #valuate transaction and fees in PLN
@@ -205,7 +206,7 @@ openshortpos <- function(psbmap) {
 closedpos <- function(psbmap) {
   return(psbmap%>% filter(!is.na(repBuys_transactionid) , !is.na(repSells_transactionid)) %>% 
     select(Tbuys_isin, Tbuys_product, repBuys_transactionid, qty,Tbuys_date,Tbuys_time,Tbuys_quote,Tbuys_quotecur,Tbuys_mid_nbptables_cur,Tbuys_valuePLN_portion,Tbuys_feePLN_portion,
-           repSells_transactionid, qty,Tsells_date,Tsells_time,Tbuys_quote,Tsells_quotecur,Tsells_mid_nbptables_cur,Tsells_valuePLN_portion,Tsells_feePLN_portion,closing_year,gainsPLN,gainsMinusFeesPLN))
+           repSells_transactionid, qty,Tsells_date,Tsells_time,Tsells_quote,Tsells_quotecur,Tsells_mid_nbptables_cur,Tsells_valuePLN_portion,Tsells_feePLN_portion,closing_year,gainsPLN,gainsMinusFeesPLN))
 }
 
 
