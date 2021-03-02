@@ -13,6 +13,6 @@ WORKDIR "app/"
 
 RUN R -e "install.packages(c('plumber','broom','rio','urltools','zoo','xts','tidyr','dplyr','lubridate', 'tidyquant','reactable','svDialogs','rnbp','data.table'))"
 
-EXPOSE 7228
+EXPOSE 8000
 
 CMD ["plumber.R"]
