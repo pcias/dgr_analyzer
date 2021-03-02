@@ -22,7 +22,7 @@ source("degiro_script.R")
 #* @get /closed_positions
 #* @serializer htmlwidget
 function(sample_url) {
-  if(sample_url=="fakeit") {
+  if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
     psb <- pSBmap(sample_url)  
@@ -38,7 +38,7 @@ function(sample_url) {
 #* @get /long_positions
 #* @serializer htmlwidget
 function(sample_url) {
-  if(sample_url=="fakeit") {
+  if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
     psb <- pSBmap(sample_url)  
@@ -54,7 +54,7 @@ function(sample_url) {
 #* @get /short_positions
 #* @serializer htmlwidget
 function(sample_url) {
-  if(sample_url=="fakeit") {
+  if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
     psb <- pSBmap(sample_url)  
@@ -78,6 +78,7 @@ function(sample_url) {
   return(output$closed)
 }
 
+
 #* fake (testing) summary for closed positions
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
 #* @get /fakeit_json
@@ -94,7 +95,7 @@ function(sample_url) {
 #* @get /closed_positions_json
 #* @serializer json
 function(sample_url) {
-  if(sample_url=="fakeit") {
+  if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
     psb<-"brak danych"
@@ -110,7 +111,7 @@ function(sample_url) {
 #* @get /long_positions_json
 #* @serializer json
 function(sample_url) {
-  if(sample_url=="fakeit") {
+  if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
       psb <- readRDS("fakeit.rds")  
   } else {
       psb<-"brak danych"
@@ -124,7 +125,7 @@ function(sample_url) {
 #* @get /short_positions_json
 #* @serializer json
 function(sample_url) {
-  if(sample_url=="fakeit") {
+  if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
     psb<-"brak danych"
