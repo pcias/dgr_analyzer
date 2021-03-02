@@ -38,6 +38,8 @@ read_transactions <- function(sample_url, from_date, to_date) {
   data_url<-param_set(data_url,"fromDate", url_encode(from_date_format))
   data_url<-param_set(data_url,"toDate", url_encode(to_date_format))
   
+  print(paste(suppressWarnings(Sys.time()),param_get(data_url,parameter_names=c("intAccount"))))
+  
   ret <- import(data_url, format = "csv", 
                 #col_types = c("text", "text", "text","text", "text","text", "text", "text","text","text", "text", "text", "text", "text","text","text","text","text","text"), 
                 #col_names =  c("date", "time", "product", "isin", "market","execution","qty", "quote", "quotecur", "locval" , 
@@ -63,7 +65,7 @@ read_transactions <- function(sample_url, from_date, to_date) {
   #   ret[[col]] <- (gsub("\u00A0","", ret[[col]]))
   #   ret[[col]] <- as.numeric(gsub(",",".", ret[[col]]))
   # }  
-  ret$date <- as.Date.character(ret$date, "%d-%m-%Y")   
+  ret$date <- suppressWarnings(as.Date.character(ret$date, "%d-%m-%Y"))   
   
   return(ret)  
 }
@@ -84,7 +86,7 @@ read_nbp <- function(currencies, analysis_start, analysis_end) {
       date_end = as_date(paste(y,"-12-31"))
       if(date_end > today()) { date_end <- today()}
       f<-get_exchangerate_from_interval("A",curcode, date_start, date_end)$content$rates
-      f<-f %>% complete(effectiveDate = seq.Date(as.Date(date_start), as.Date(date_end), by="day")) %>% fill(no,mid)
+      f<-f %>% complete(effectiveDate = suppressWarnings(seq.Date(as.Date(date_start), as.Date(date_end), by="day"))) %>% fill(no,mid)
       f<-cbind(curcode,f)
       forex<-forex %>% bind_rows(f)
     }
@@ -151,7 +153,7 @@ pSBmap <- function(sample_url) {
   currencies <- Transactions%>%select(quotecur)%>%bind_rows(list(quotecur="EUR"))%>%distinct(quotecur)
   isins <- Transactions%>%select(isin)%>%distinct(isin)
   
-  nbptables <- read_nbp(currencies, analysis_start,analysis_end)
+  nbptables <- suppressWarnings(read_nbp(currencies, analysis_start,analysis_end))
   
   
   #now join Transations with forex to valuate transaction
@@ -327,7 +329,7 @@ pSBreactable <- function(psbmap) {
 
 test<-function() {
   
-  sample_url <- "https://trader.degiro.nl/reporting/secure/v3/positionReport/xls?intAccount=71001415&sessionId=0769C5C351A301DA79055003AB6DDD3D.prod_b_126_1&country=PL&lang=pl&toDate=18%2F02%2F2021"
+  sample_url <- "fakeit"
   #sample_url <- dlg_input("Paste here portfolio download xls link (portfolio->download->XLS):", default = sample_url)$res
   
   psb <- pSBmap(sample_url)

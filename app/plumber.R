@@ -134,7 +134,3 @@ function(sample_url) {
 }
 
 
-
-
-#* @assets ./static /
-list()
