@@ -21,7 +21,8 @@ source("degiro_script.R")
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
 #* @get /closed_positions
 #* @serializer htmlwidget
-function(sample_url) {
+function(sample_url="test") {
+  sample_url <- if_else(is.na(sample_url),"",sample_url)
   if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
@@ -37,7 +38,7 @@ function(sample_url) {
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
 #* @get /long_positions
 #* @serializer htmlwidget
-function(sample_url) {
+function(sample_url="test") {
   if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
@@ -53,7 +54,7 @@ function(sample_url) {
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
 #* @get /short_positions
 #* @serializer htmlwidget
-function(sample_url) {
+function(sample_url="test") {
   if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
@@ -94,7 +95,7 @@ function(sample_url) {
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
 #* @get /closed_positions_json
 #* @serializer json
-function(sample_url) {
+function(sample_url="test") {
   if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
@@ -110,9 +111,9 @@ function(sample_url) {
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
 #* @get /long_positions_json
 #* @serializer json
-function(sample_url) {
+function(sample_url="test") {
   if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
-      psb <- readRDS("fakeit.rds")  
+      psb <- readRDS("fakeit.rds")
   } else {
       psb<-"brak danych"
       psb <- pSBmap(sample_url)  
@@ -124,7 +125,7 @@ function(sample_url) {
 #* @param sample_url sample_url from open session (portfel->pobierz->xls->copy link address)
 #* @get /short_positions_json
 #* @serializer json
-function(sample_url) {
+function(sample_url="test") {
   if(sample_url %in% c('fakeit','Fakeit','test','Test')) {
     psb <- readRDS("fakeit.rds")  
   } else {
@@ -134,4 +135,10 @@ function(sample_url) {
   return(openshortpos(psb))
 }
 
-
+#* @filter logger
+function(req){
+  cat(as.character(Sys.time()), "-",
+      req$REQUEST_METHOD, req$PATH_INFO, "-",
+      req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR, "\n")
+  plumber::forward()
+}
