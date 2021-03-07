@@ -32,6 +32,7 @@ library(tidyquant)
 #library(knitr)
 library(reactable)
 library(data.table)
+library(slackr)
 
 #library(svDialogs)
 
@@ -56,7 +57,10 @@ read_transactions <- function(sample_url, from_date, to_date) {
   data_url<-param_set(data_url,"fromDate", url_encode(from_date_format))
   data_url<-param_set(data_url,"toDate", url_encode(to_date_format))
   
-  print(paste(suppressWarnings(Sys.time()),param_get(data_url,parameter_names=c("intAccount"))))
+  log_ <- paste(suppressWarnings(Sys.time()),param_get(data_url,parameter_names=c("intAccount")))
+  print(log_)
+  slackr::slackr_setup(channel='#kalkulator', username = Sys.getenv('SLACK_USERNAME'), bot_user_oauth_token = Sys.getenv('SLACK_BOT_USER_OAUTH_TOKEN'))
+  slackr::slackr_msg(log_)
   
   ret <- import(data_url, format = "csv", 
                 #col_types = c("text", "text", "text","text", "text","text", "text", "text","text","text", "text", "text", "text", "text","text","text","text","text","text"), 
