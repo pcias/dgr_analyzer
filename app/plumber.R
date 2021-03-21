@@ -10,6 +10,7 @@
 .libPaths( c( .libPaths(), "~/Rlibs") )
 
 source("degiro_script.R")
+source("etoro_script.R")
 
 #library(plumber)
 
@@ -134,4 +135,25 @@ function(sample_url) {
   return(openshortpos(psb))
 }
 
+#* Upload etoro excel file
+#* @post /upload_etoro
+#* @serializer json
+function(req) {
+  
+  multipart <- mime::parse_multipart(req)
+  
+  fp <- purrr::pluck(multipart, 1, "datapath", 1)
+  
+  cat(fp)  
 
+  f_name <- purrr::pluck(multipart, 1, "name")
+  
+  cat(f_name)
+  
+  return(read_etoro_closed_pos(f_name,1,1))
+  
+  
+  # u_path <- file.path("data", f_name)
+  # 
+  # fs::file_copy(fp, u_path)
+}
