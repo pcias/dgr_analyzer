@@ -1,3 +1,21 @@
+# Copyright (C) 2021 pcs Przemyslaw Cias
+# 
+# This file is part of DGR Analyzer.
+# 
+# DGR Analyzer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# DGR Analyzer-React is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with DGR Analyzer-React.  If not, see <http://www.gnu.org/licenses/>.
+
+
 library(rio)
 #library(writexl)
 library(urltools)
@@ -14,6 +32,7 @@ library(tidyquant)
 #library(knitr)
 library(reactable)
 library(data.table)
+library(slackr)
 
 #library(svDialogs)
 
@@ -38,7 +57,10 @@ read_transactions <- function(sample_url, from_date, to_date) {
   data_url<-param_set(data_url,"fromDate", url_encode(from_date_format))
   data_url<-param_set(data_url,"toDate", url_encode(to_date_format))
   
-  print(paste(suppressWarnings(Sys.time()),param_get(data_url,parameter_names=c("intAccount"))))
+  log_ <- paste(suppressWarnings(Sys.time()),param_get(data_url,parameter_names=c("intAccount")))
+  print(log_)
+  slackr::slackr_setup(channel='#kalkulator', username = Sys.getenv('SLACK_USERNAME'), bot_user_oauth_token = Sys.getenv('SLACK_BOT_USER_OAUTH_TOKEN'))
+  slackr::slackr_msg(log_)
   
   ret <- import(data_url, format = "csv", 
                 #col_types = c("text", "text", "text","text", "text","text", "text", "text","text","text", "text", "text", "text", "text","text","text","text","text","text"), 
