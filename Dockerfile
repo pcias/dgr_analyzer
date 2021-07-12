@@ -1,4 +1,4 @@
-FROM rstudio/plumber
+FROM rstudio/plumber:v1.0.0
 MAINTAINER Przemyslaw Cias <przemyslaw.cias@gmail.com>
 
 
