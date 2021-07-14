@@ -11,7 +11,7 @@ RUN cd ~
 COPY / /
 WORKDIR "app/"
 
-RUN R -e "install.packages(c('Rcpp','plumber','broom','rio','urltools','zoo','xts','tidyr','dplyr','lubridate', 'tidyquant','reactable','svDialogs','rnbp','data.table','slackr'))"
+RUN R -e "install.packages(c('devtools','Rcpp','plumber','broom','rio','urltools','zoo','xts','tidyr','dplyr','lubridate', 'tidyquant','reactable','svDialogs','rnbp','data.table'));devtools::install_version('slackr', version='2.2.0')"
 
 EXPOSE 8000
 
