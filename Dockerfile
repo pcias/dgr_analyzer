@@ -11,7 +11,7 @@ RUN cd ~
 COPY / /
 WORKDIR "app/"
 
-RUN R -e "install.packages(c('plumber','broom','rio','urltools','zoo','xts','tidyr','dplyr','lubridate', 'tidyquant','reactable','svDialogs','rnbp','data.table','slackr'))"
+RUN R -e "install.packages(c('Rcpp','plumber','broom','rio','urltools','zoo','xts','tidyr','dplyr','lubridate', 'tidyquant','reactable','svDialogs','rnbp','data.table','slackr'))"
 
 EXPOSE 8000
 
