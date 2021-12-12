@@ -115,7 +115,7 @@ read_nbp <- function(currencies, analysis_start, analysis_end) {
   }
   
   #GBX now : create from GBP rows
-  forex <- forex%>%bind_rows(forex%>%filter(curcode=="GBP")%>%mutate(curcode="GBX", mid=mid/1000))
+  forex <- forex%>%bind_rows(forex%>%filter(curcode=="GBP")%>%mutate(curcode="GBX", mid=mid/100))
   #for simplicity add PLN rows for all dates
   forex<-forex%>%bind_rows(forex%>%filter(curcode=="EUR")%>%mutate(curcode="PLN", mid=1))
   
